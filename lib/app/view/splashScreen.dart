@@ -6,7 +6,7 @@ class MySplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SplashScreen(
-        seconds: 6,
+        seconds: 3,
         navigateAfterSeconds: HomePage(),
         title: Text(
           'Welcome To SplashScreen',

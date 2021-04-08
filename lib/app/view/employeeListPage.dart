@@ -29,8 +29,6 @@ class _HomePageState extends State {
   var data = [];
   bool isLoading = false;
 
-  int increment = 5;
-
   int currentLength = 0;
 
   int selectedIndex;
@@ -77,8 +75,6 @@ class _HomePageState extends State {
           return a["firstName"].toString().compareTo(b["firstName"].toString());
         });
       });
-
-      print(data);
     });
 
     super.initState();
@@ -93,9 +89,9 @@ class _HomePageState extends State {
       setState(() {
         data = empList;
       });
-
-      print("=============");
-    } catch (e) {}
+    } catch (e) {
+      print(e);
+    }
   }
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
@@ -123,35 +119,7 @@ class _HomePageState extends State {
   }
 
   void _onVerticalDragStart(DragStartDetails details) {
-//    var heightAfterToolbar = height - diff;
-//    print("height1 $heightAfterToolbar");
-//    var remavingHeight = heightAfterToolbar - (20.0 * 26);
-//    print("height2 $remavingHeight");
-//
-//    var reducedheight = remavingHeight / 2;
-//    print("height3 $reducedheight");
     _offsetContainer = details.globalPosition.dy - diff;
-  }
-
-  Future _loadMore() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    // Add in an artificial delay
-    await Future.delayed(const Duration(seconds: 2));
-
-    for (var i = currentLength; i <= currentLength + increment; i++) {
-      data.add(data[i]);
-    }
-    setState(() {
-      isLoading = false;
-      currentLength = data.length;
-    });
-
-    print(data[0]["age"]);
-
-    print("++++++++++++++++++++++++++++++++++++++++");
   }
 
   @override
@@ -159,112 +127,123 @@ class _HomePageState extends State {
     height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 100.0,
-        elevation: 0.0,
-        backgroundColor: Colors.black,
-        title: Text("EMPLOYEE LIST",style:TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 26.0)),
-        centerTitle: true,
-      ),
+      appBar: appbarWidget(),
       body: LayoutBuilder(
         builder: (context, contrainsts) {
           diff = height - contrainsts.biggest.height;
           _heightscroller = (contrainsts.biggest.height) / _alphabet.length;
           _sizeheightcontainer = (contrainsts.biggest.height); //NO
-          return new Stack(children: [
-            data.length != null
-                ? ListView.builder(
-                    itemCount: data.length,
-                    controller: _controller,
-                    itemExtent: _itemsizeheight,
-                    itemBuilder: (context, position) {
-                      if (isLoading) {
-                        return Center(
-                          child: CircularProgressIndicator(
-                            backgroundColor: Colors.red,
-                            strokeWidth: 0.6,
-                          ),
-                        );
-                      }
-                      return Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => DetailPage(
-                                            name: data[position]["firstName"],
-                                            lastname: data[position]
-                                                ["lastName"],
-                                            email: data[position]["email"],
-                                            age: data[position]["age"]
-                                                .toString(),
-                                            mob: data[position]
-                                                ["contactNumber"],
-                                            image: data[position]["imageUrl"],
-                                            salary: data[position]["salary"]
-                                                .toString(),
-                                            address: data[position]["address"],
-                                          )));
-                            },
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                FadeInImage.assetNetwork(
-                                  image: data[position]["imageUrl"],
-                                  placeholder: "assets/giphy.gif",
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 8.0, right: 8.0),
-                                  child: Text(
-                                    data[position]["firstName"],
-                                    style: TextStyle(fontSize: 20.0),
-                                  ),
-                                ),
-                                Text(
-                                  data[position]["lastName"],
-                                  style: TextStyle(fontSize: 20.0),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  )
-                : Center(
-                    child: CircularProgressIndicator(),
-                  ),
-            Positioned(
-              right: _marginRight,
-              top: _offsetContainer,
-              child: _getSpeechBubble(),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: GestureDetector(
-                onVerticalDragUpdate: _onVerticalDragUpdate,
-                onVerticalDragStart: _onVerticalDragStart,
-                child: Container(
-                  ///  height: 20.0 * 26,
-                  color: Colors.transparent,
-                  child: new Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: []..addAll(
-                        new List.generate(_alphabet.length,
-                            (index) => _getAlphabetItem(index)),
-                      ),
-                  ),
-                ),
-              ),
-            ),
-          ]);
+          return listData();
         },
       ),
+    );
+  }
+
+  Widget listData() {
+    return Stack(children: [
+      data.length != null
+          ? ListView.builder(
+              itemCount: data.length,
+              controller: _controller,
+              itemExtent: _itemsizeheight,
+              itemBuilder: (context, position) {
+                return onItemTap(context, position);
+              },
+            )
+          : Center(
+              child: CircularProgressIndicator(),
+            ),
+      Positioned(
+        right: _marginRight,
+        top: _offsetContainer,
+        child: _getSpeechBubble(),
+      ),
+      alignAlphabateList(),
+    ]);
+  }
+
+  Widget alignAlphabateList() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: GestureDetector(
+        onVerticalDragUpdate: _onVerticalDragUpdate,
+        onVerticalDragStart: _onVerticalDragStart,
+        child: Container(
+          ///  height: 20.0 * 26,
+          color: Colors.transparent,
+          child: new Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: []..addAll(
+                new List.generate(
+                    _alphabet.length, (index) => _getAlphabetItem(index)),
+              ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget onItemTap(BuildContext context, int position) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => DetailPage(
+                    name: data[position]["firstName"],
+                    lastname: data[position]["lastName"],
+                    email: data[position]["email"],
+                    age: data[position]["age"].toString(),
+                    mob: data[position]["contactNumber"],
+                    image: data[position]["imageUrl"],
+                    salary: data[position]["salary"].toString(),
+                    address: data[position]["address"],
+                    birthDate: data[position]["dob"])));
+      },
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: itemCard(position),
+        ),
+      ),
+    );
+  }
+
+  Widget appbarWidget() {
+    return AppBar(
+      toolbarHeight: 100.0,
+      elevation: 0.0,
+      backgroundColor: Colors.black,
+      title: Text(
+        "EMPLOYEE LIST",
+        style: TextStyle(
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 26.0),
+      ),
+      centerTitle: true,
+    );
+  }
+
+  Widget itemCard(int position) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        FadeInImage.assetNetwork(
+          image: data[position]["imageUrl"],
+          placeholder: "assets/giphy.gif",
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+          child: Text(
+            data[position]["firstName"],
+            style: TextStyle(fontSize: 20.0),
+          ),
+        ),
+        Text(
+          data[position]["lastName"],
+          style: TextStyle(fontSize: 20.0),
+        ),
+      ],
     );
   }
 
@@ -291,8 +270,6 @@ class _HomePageState extends State {
     );
   }
 
-  ValueGetter callback(int value) {}
-
   _getAlphabetItem(int index) {
     return new Expanded(
       child: new Container(
@@ -309,7 +286,6 @@ class _HomePageState extends State {
     );
   }
 
-  //scroll detector for reached top or bottom
   _scrollListener() {
     if ((_controller.offset) >= (_controller.position.maxScrollExtent)) {
       print("reached bottom");

@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 
-
 List<Employee> employeeFromJson(String str) =>
     List<Employee>.from(json.decode(str).map((x) => Employee.fromJson(x)));
 
@@ -12,7 +11,6 @@ String employeeToJson(List<Employee> data) =>
     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class Employee {
-  
   Employee({
     this.id,
     this.imageUrl,
@@ -62,11 +60,6 @@ class Employee {
         "salary": salary,
         "address": address,
       };
-
-  @override
-  Employee fromJson(Map<String, Object> json) {
-    return Employee.fromJson(json);
-  }
 
   static List<Employee> fromJsonList(jsonList) {
     return jsonList.map<Employee>((obj) => Employee.fromJson(obj)).toList();

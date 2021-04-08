@@ -23,13 +23,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  alphabet_scroll_view: 
-  shimmer:
-  incrementally_loading_listview:  
+  
   cupertino_icons: ^1.0.2
-  get:
-  speech_bubble:
-  splashscreen:
+  flutter_icons: any
+  speech_bubble: any
+  splashscreen: any
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

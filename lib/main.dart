@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:task/app/view/employeeListPage.dart';
-import 'app/view/detailsPage.dart';
 import 'app/view/splashScreen.dart';
 
 void main() {
